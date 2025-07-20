@@ -1,9 +1,6 @@
 package org.example.hsf_prj.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.hsf_prj.entity.enums.UserRole;
 import org.example.hsf_prj.entity.enums.UserStatus;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,7 +15,8 @@ import java.util.Set;
 // 1. User Entity - Quản lý tài khoản người dùng
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
