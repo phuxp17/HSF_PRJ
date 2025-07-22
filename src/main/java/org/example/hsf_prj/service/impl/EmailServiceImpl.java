@@ -84,7 +84,7 @@ public class EmailServiceImpl implements EmailService {
     @Async
     @Override
     public void sendPasswordResetEmail(String recipientEmail, String resetToken) throws MessagingException {
-        String resetLink = "http://localhost:5173/reset-password?token=" + resetToken;
+        String resetLink = "http://localhost:8080/reset-password?token=" + resetToken;
 
         String subject = "[HSF System] Password Reset Request";
         String body = "Click the link to reset your password: <a href=\"" + resetLink + "\">Reset Password</a><br><br>" +

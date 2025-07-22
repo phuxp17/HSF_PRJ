@@ -29,6 +29,9 @@ public class LessonContent {
     private String content;
 
     private String fileName;
+
+    private String youtubeUrl;
+
     private String fileUrl;
     private Long fileSize;
 

@@ -42,7 +42,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserRole role; // STUDENT, TEACHER, ADMIN
+    private UserRole role;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

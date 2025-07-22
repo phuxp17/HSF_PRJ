@@ -8,8 +8,11 @@ import org.example.hsf_prj.config.JwtUtil;
 import org.example.hsf_prj.dto.request.*;
 import org.example.hsf_prj.dto.response.AuthLoginResponse;
 import org.example.hsf_prj.dto.response.UserResponse;
+import org.example.hsf_prj.entity.User;
+import org.example.hsf_prj.repository.UserRepository;
 import org.example.hsf_prj.service.AuthenticationService;
 import org.example.hsf_prj.service.EmailService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +25,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
     private final EmailService emailService;
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
     // === TRANG LOGIN ===
     @GetMapping("/login")
@@ -49,8 +53,6 @@ public class AuthenticationController {
         return "verify-otp";
     }
 
-    // === XÁC THỰC OTP ===
-    // === XÁC THỰC OTP ===
     @PostMapping("/verify-otp")
     public String completeLoginWithOtp(@ModelAttribute VerifyOTPRequest request,
                                        HttpServletRequest servletRequest,
@@ -61,19 +63,29 @@ public class AuthenticationController {
 
             AuthLoginResponse response = emailService.verifyOtp(request);
 
-            // Nếu cần truyền thêm user info về giao diện dashboard.jsp
             model.addAttribute("user", response);
             model.addAttribute("email", request.getEmail());
 
-            // Điều hướng đến dashboard dành cho student
-            return "student/dashboard";  // trỏ tới /WEB-INF/jsp/student/dashboard.jsp
+            // Chuyển hướng theo role
+            switch (response.getRole()) {
+                case STUDENT:
+                    return "student/dashboard";  // WEB-INF/views/student/dashboard.jsp
+                case TEACHER:
+                    return "teacher/dashboard";  // WEB-INF/views/teacher/dashboard.jsp
+                case ADMIN:
+                    return "admin/dashboard";    // nếu có trang admin
+                default:
+                    model.addAttribute("error", "Không xác định được vai trò người dùng.");
+                    return "verify-otp";
+            }
 
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
-            model.addAttribute("email", request.getEmail()); // đảm bảo email tồn tại lại trong form
+            model.addAttribute("email", request.getEmail());
             return "verify-otp";
         }
     }
+
 
 
 
@@ -110,10 +122,31 @@ public class AuthenticationController {
 
 
     // === TRANG RESET MẬT KHẨU ===
-    @GetMapping("/reset-password")
-    public String showResetPasswordPage() {
-        return "reset-password";
+    @GetMapping("/forgot-password")
+    public String showForgotPasswordPage() {
+        return "forgot-password"; // tương ứng với WEB-INF/views/forgot-password.jsp
     }
+
+    @PostMapping("/forgot-password")
+    public String processForgotPassword(@RequestParam("email") String email, Model model) {
+        try {
+            // 1. Tìm user theo email
+            User user = userRepository.findByEmail(email.trim())
+                    .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng với email: " + email));
+
+            // 2. Tạo reset token
+            String resetToken = jwtUtil.generatePasswordResetToken(user);  // bạn cần hàm này
+
+            // 3. Gửi email chứa token
+            emailService.sendPasswordResetEmail(user.getEmail(), resetToken);
+
+            model.addAttribute("success", "Email đặt lại mật khẩu đã được gửi.");
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+        }
+        return "forgot-password";
+    }
+
 
     @PostMapping("/reset-password")
     public String resetPassword(@ModelAttribute ResetPasswordRequest request, Model model) {
@@ -125,6 +158,11 @@ public class AuthenticationController {
             model.addAttribute("error", e.getMessage());
             return "reset-password";
         }
+    }
+    @GetMapping("/reset-password")
+    public String showResetPasswordForm(@RequestParam("token") String token, Model model) {
+        model.addAttribute("token", token); // truyền token để form JSP sử dụng
+        return "reset-password";   // hoặc "reset-password" nếu JSP nằm trực tiếp trong WEB-INF/views
     }
 
     // === ĐĂNG XUẤT ===
