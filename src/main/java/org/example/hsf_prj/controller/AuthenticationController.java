@@ -35,6 +35,7 @@ public class AuthenticationController {
         try {
             String message = authenticationService.login(request);
             model.addAttribute("success", message);
+            model.addAttribute("email", request.getEmail());
             return "verify-otp";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
@@ -49,6 +50,7 @@ public class AuthenticationController {
     }
 
     // === XÁC THỰC OTP ===
+    // === XÁC THỰC OTP ===
     @PostMapping("/verify-otp")
     public String completeLoginWithOtp(@ModelAttribute VerifyOTPRequest request,
                                        HttpServletRequest servletRequest,
@@ -56,14 +58,24 @@ public class AuthenticationController {
         try {
             request.setIp(servletRequest.getRemoteAddr());
             request.setUserAgent(servletRequest.getHeader("User-Agent"));
+
             AuthLoginResponse response = emailService.verifyOtp(request);
+
+            // Nếu cần truyền thêm user info về giao diện dashboard.jsp
             model.addAttribute("user", response);
-            return "home"; // Home.jsp khi đăng nhập thành công
+            model.addAttribute("email", request.getEmail());
+
+            // Điều hướng đến dashboard dành cho student
+            return "student/dashboard";  // trỏ tới /WEB-INF/jsp/student/dashboard.jsp
+
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
+            model.addAttribute("email", request.getEmail()); // đảm bảo email tồn tại lại trong form
             return "verify-otp";
         }
     }
+
+
 
     // === GỬI LẠI OTP ===
     @PostMapping("/send-otp")
@@ -96,22 +108,6 @@ public class AuthenticationController {
         }
     }
 
-    // === TRANG YÊU CẦU RESET MẬT KHẨU ===
-    @GetMapping("/forgot-password")
-    public String showForgotPasswordForm() {
-        return "forgot-password";
-    }
-
-    @PostMapping("/forgot-password")
-    public String requestPasswordReset(@RequestParam String email, Model model) {
-        try {
-            authenticationService.requestPasswordReset(email);
-            model.addAttribute("success", "If account exists, reset link sent.");
-        } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
-        }
-        return "forgot-password";
-    }
 
     // === TRANG RESET MẬT KHẨU ===
     @GetMapping("/reset-password")

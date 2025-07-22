@@ -61,21 +61,7 @@
                     .csrf(AbstractHttpConfigurer::disable)
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .authorizeHttpRequests(auth -> auth
-                            .requestMatchers("/", "/home").permitAll()
-                            .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                            .requestMatchers(HttpMethod.POST,
-                                    "/login",
-                                    "/forgot-password",
-                                    "/onboarding/**",
-                                    "/reset-password",
-                                    "/login/verify-otp").permitAll()
-                            .requestMatchers("/", "/home", "/WEB-INF/**").permitAll()
-                            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                            .anyRequest().authenticated()
-                    )
-
-
-                    .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                            .requestMatchers("/**").permitAll());
             return http.build();
         }
 

@@ -9,12 +9,9 @@ import org.example.hsf_prj.config.SecurityConfig;
 import org.example.hsf_prj.dto.request.LoginRequest;
 import org.example.hsf_prj.dto.request.RegisterRequest;
 import org.example.hsf_prj.dto.response.UserResponse;
-
 import org.example.hsf_prj.entity.User;
-
 import org.example.hsf_prj.entity.enums.UserRole;
 import org.example.hsf_prj.entity.enums.UserStatus;
-
 import org.example.hsf_prj.repository.UserRepository;
 import org.example.hsf_prj.service.AuthenticationService;
 import org.example.hsf_prj.service.EmailService;
